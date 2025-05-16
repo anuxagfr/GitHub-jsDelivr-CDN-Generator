@@ -2,7 +2,7 @@
 
 **Anux CDN** is a powerful and modern tool that helps developers generate CDN links directly from GitHub repositories using [jsDelivr](https://www.jsdelivr.com/). No need to remember URL formats or manually build links — just input your details, browse files, and get ready-to-use CDN URLs.
 
-![Screenshot](https://your-cdn-link/screenshot.jpg) <!-- Replace with actual image URL -->
+![Screenshot](https://anuxagfr.github.io/img.jpg) <!-- Replace with actual image URL -->
 
 ---
 
@@ -58,7 +58,7 @@ https://cdn.jsdelivr.net/gh/anuxagfr/Anurag-Gautam/styles.css
 
 ## Live Demo
 
-[Open Tool](https://your-live-demo-url.com) — _Hosted by anuxagfr_
+[Open Tool](https://anuxagfr.github.io/GitHub-jsDelivr-CDN-Generator/) — _Hosted by anuxagfr_
 
 ---
 
