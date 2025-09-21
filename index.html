@@ -3,14 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub to jsDelivr CDN Generator</title>
+    <title>Home - CDN Generator</title>
     
     <!-- Firebase SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-    <link rel="stylesheet" href="style.css" />
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-   
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --primary-color: #0d6efd; --primary-hover: #0b5ed7;
+            --text-dark: #212529; --text-light: #6c757d;
+            --bg-light: #f8f9fa; --bg-white: #ffffff;
+            --border-color: #dee2e6; --danger-color: #dc3545;
+            --danger-hover: #c82333; --google-blue: #4285F4;
+            --github-dark: #333; --shadow-color: rgba(0,0,0,0.05);
+            --theme-transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- DARK MODE THEME --- */
+        body.dark-mode {
+            --primary-color: #4dabf7; --primary-hover: #74c0fc;
+            --text-dark: #e9ecef; --text-light: #adb5bd;
+            --bg-light: #121212; --bg-white: #1e1e1e;
+            --border-color: #495057; --danger-color: #e03131;
+            --danger-hover: #f03e3e; --shadow-color: rgba(255,255,255,0.05);
+        }
+
+        /* --- GENERAL & LAYOUT STYLES --- */
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light); color: var(--text-dark);
+            margin: 0; padding: 60px 0 0; line-height: 1.6;
+            transition: var(--theme-transition);
+        }
+        .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+        .section { padding: 60px 20px 40px; }
+        .section h2 { text-align: center; margin-bottom: 30px; font-size: 2em; }
+        .hidden { display: none; }
+
+        /* --- NAVIGATION BAR --- */
+        nav {
+            background-color: var(--bg-white); padding: 0 20px;
+            box-shadow: 0 2px 5px var(--shadow-color); position: fixed;
+            top: 0; width: 100%; height: 60px; z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            box-sizing: border-box; border-bottom: 1px solid var(--border-color);
+            transition: var(--theme-transition), border-bottom 0.3s ease;
+        }
+        .nav-container { display: flex; align-items: center; width: 100%; max-width: 960px; }
+        .nav-left { display: flex; align-items: center; gap: 30px; }
+        .logo { font-size: 1.5em; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+        .nav-links { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 20px; }
+        .nav-links a { color: var(--text-dark); text-decoration: none; font-weight: 500; transition: color 0.3s ease; cursor: pointer; }
+        .nav-links a:hover { color: var(--primary-color); }
+        .nav-actions { display: flex; align-items: center; gap: 15px; margin-left: auto; }
+        .hamburger { display: none; cursor: pointer; background: none; border: none; padding: 0; z-index: 1001;}
+        .hamburger .bar { display: block; width: 25px; height: 3px; margin: 5px auto; background-color: var(--text-dark); transition: all 0.3s ease-in-out; }
+
+        /* --- HEADER & FOOTER --- */
+        header { text-align: center; padding: 40px 20px; }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-color); }
+        header p { font-size: 1.2em; color: var(--text-light); }
+        footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid var(--border-color); font-size: 0.9em; color: var(--text-light); transition: var(--theme-transition), border-top 0.3s ease; }
+        footer a { color: var(--primary-color); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* --- CARDS --- */
+        .card {
+            background-color: var(--bg-white); padding: 25px; margin-bottom: 20px;
+            border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transition: var(--theme-transition), border 0.3s ease;
+        }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .feature-item { padding: 20px; border-left: 3px solid var(--primary-color); }
+        .card ol, .card ul { padding-left: 20px; margin: 0; }
+        code { background-color: var(--border-color); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: var(--text-dark); }
+
+        /* --- BUTTONS & USER PROFILE --- */
+        .cta-button { display: inline-block; background-color: var(--primary-color); color: var(--bg-white) !important; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 20px; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        .cta-button:hover { background-color: var(--primary-hover); }
+        .nav-actions button { border: none; padding: 8px 16px; border-radius: 5px; font-size: 0.9em; font-weight: 500; cursor: pointer; transition: background-color 0.3s ease; }
+        #login-nav-btn { background-color: var(--primary-color); color: white; }
+        #login-nav-btn:hover { background-color: var(--primary-hover); }
+        #user-info { display: none; align-items: center; gap: 10px; }
+        #user-name { font-weight: 500; }
+        #logout-button { background-color: var(--danger-color); color: white; }
+        #logout-button:hover { background-color: var(--danger-hover); }
+        .profile-picture { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
+
+        /* --- MODAL STYLES --- */
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: var(--bg-white); margin: 15vh auto; padding: 25px 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: var(--theme-transition); }
+        .close-btn { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover { color: var(--text-dark); }
+        .login-buttons-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .login-btn { display: inline-flex; align-items: center; justify-content: center; border: none; padding: 12px 20px; border-radius: 5px; font-size: 1em; font-weight: 500; cursor: pointer; transition: opacity 0.3s ease; }
+        .login-btn:hover { opacity: 0.9; }
+        .login-btn svg { width: 20px; height: 20px; margin-right: 10px; }
+        #google-login-btn { background-color: var(--google-blue); color: white; }
+        #github-login-btn { background-color: var(--github-dark); color: white; }
+
+        /* --- Social Media Icon Styles --- */
+        .social-media { margin-bottom: 15px; }
+        .social-media a { display: inline-block; margin: 0 10px; text-decoration: none; }
+        .social-media svg { width: 24px; height: 24px; fill: var(--text-light); transition: fill 0.3s ease; }
+        .social-media a:hover svg { fill: var(--primary-color); }
+        
+        /* --- RESPONSIVE STYLES --- */
+        @media (max-width: 768px) {
+            .nav-left { display: none; flex-direction: column; gap: 20px; align-items: center; width: 100%; background-color: var(--bg-white); position: absolute; top: 60px; left: 0; padding: 20px 0; box-shadow: 0 2px 5px var(--shadow-color); border-top: 1px solid var(--border-color); }
+            .nav-left.active { display: flex; }
+            .nav-links { flex-direction: column; gap: 15px; margin-left: 0; }
+            .hamburger { display: block; }
+            .hamburger.active .bar:nth-child(2) { opacity: 0; }
+            .hamburger.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+            .hamburger.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+        }
+    </style>
 </head>
 <body>
     
@@ -23,30 +135,34 @@
     </script>
 
     <nav>
-        <div class="nav-container"> 
-              <button class="hamburger">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">CDN Generator</a>
+                <ul class="nav-links">
+                    <li class="nav-tool-link hidden"><a href="tool.html">Tool</a></li>
+                    <li><a href="#details">Details</a></li>
+                    <li><a href="#how-to-use">How to Use</a></li>
+                    <li><a href="#features">Features</a></li>
+                </ul>
+            </div>
+            <div class="nav-actions">
+                <button id="login-nav-btn">Login</button>
+                <div id="user-info">
+                    <img id="profile-picture" src="https://placehold.co/36x36/eee/ccc?text=?" alt="Profile Picture" class="profile-picture">
+                    <span id="user-name"></span>
+                    <button id="logout-button">Logout</button>
+                </div>
+            </div>
+            <button class="hamburger">
                 <span class="bar"></span>
                 <span class="bar"></span>
                 <span class="bar"></span>
             </button>
-        
-            <a href="#" class="logo">CDN Generator</a></div>
-            <ul class="nav-links">
-                <li><a href="#details">Details</a></li>
-                <li><a href="#how-to-use">How to Use</a></li>
-                <li><a href="#features">Features</a></li>
-            </ul>
-            <div class="nav-actions">
-                <button id="login-nav-btn">Login</button>
-                <div id="user-info">
-                    <span id="user-name"></span>
-                    <button id="logout-button">Logout</button>
-                </div>
-            
-          </div>
+        </div>
     </nav>
     
     <div id="auth-modal" class="modal">
+        <!-- Login Modal Content -->
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h3>Sign In</h3>
@@ -65,75 +181,61 @@
     </div>
 
     <div class="container">
-        <header>
-            <h1>GitHub → jsDelivr CDN Generator</h1>
-            <p>A powerful and modern tool that helps developers generate CDN links directly from GitHub repositories.</p>
-        </header>
-        
-        <div id="demo" class="section card hidden">
-            <h2>Live Tool</h2>
-            <p>Enter the repository details below to get started.</p>
-            <div class="form-group">
-                <label for="github-username">GitHub Username</label>
-                <input type="text" id="github-username" placeholder="e.g., jquery">
-            </div>
-            <div class="form-group">
-                <label for="repo-name">Repository Name</label>
-                <input type="text" id="repo-name" placeholder="e.g., jquery">
-            </div>
-            <div class="form-group">
-                <label for="branch">Branch</label>
-                <input type="text" id="branch" placeholder="e.g., main">
-            </div>
-            <a href="#" class="cta-button">Browse Files</a>
+        <!-- Logged Out Content -->
+        <div id="logged-out-view">
+            <header>
+                <h1>GitHub → jsDelivr CDN Generator</h1>
+                <p>A powerful tool to generate CDN links directly from GitHub repositories.</p>
+                <button id="login-main-btn" class="cta-button">Login to Get Started</button>
+            </header>
         </div>
 
+        <!-- Logged In Home Page Content -->
+        <div id="home-page" class="section card hidden">
+            <h2>Welcome, <span id="welcome-user-name"></span>!</h2>
+            <p>You are now logged in. You can start generating CDN links or explore the features of the tool below.</p>
+            <a href="tool.html" class="cta-button">Go to Generator Tool</a>
+        </div>
+
+        <!-- Informational sections, always visible -->
         <div id="details" class="section card">
             <h2>Finding Your Details</h2>
-            <p>To generate a link, the tool needs three key pieces of information from a GitHub repository URL.</p>
             <p>For example, in the URL <code>https://github.com/facebook/react</code>:</p>
             <ul>
                 <li>The <strong>username</strong> is <code>facebook</code>.</li>
                 <li>The <strong>repository name</strong> is <code>react</code>.</li>
             </ul>
-            <p>The <strong>branch</strong> is usually <code>main</code> or <code>master</code>. You can find and change it using the branch selector dropdown on the repository's main page, typically on the top-left.</p>
-            
+            <p>The <strong>branch</strong> is usually <code>main</code> or <code>master</code>, found in a dropdown on the repository's main page.</p>
         </div>
 
         <div id="how-to-use" class="section card">
             <h2>How to Use</h2>
             <ol>
-                <li><strong>Sign In:</strong> Click the 'Login' button in the navigation bar and authenticate using the pop-up modal with your Google or GitHub account.</li>
-                <li><strong>Enter Details:</strong> Once logged in, the main tool will appear. Fill in the GitHub username, repository name, and the specific branch you want to access.</li>
-                <li><strong>Browse Files:</strong> Click the 'Browse Files' button. A file explorer will load, showing all the files and folders in that specific branch of the repository.</li>
-                <li><strong>Generate Link:</strong> Navigate through the folders and click on any file. The tool will instantly generate a globally-accelerated jsDelivr CDN link and a ready-to-use HTML snippet for your project.</li>
+                <li><strong>Sign In:</strong> Click 'Login' and authenticate via the pop-up.</li>
+                <li><strong>Navigate to Tool:</strong> Go to the generator tool from the home page or navigation bar.</li>
+                <li><strong>Enter Details:</strong> Fill in the GitHub username, repository name, and branch.</li>
+                <li><strong>Browse & Generate:</strong> Click 'Browse Files', select a file, and the CDN link will be generated instantly.</li>
             </ol>
         </div>
 
         <div id="features" class="section">
             <h2>Features</h2>
             <div class="features-grid">
-                <div class="card feature-item"><h3>Easy CDN Link Generation</h3><p>Converts standard GitHub file URLs into high-performance, globally distributed jsDelivr CDN links suitable for production use.</p></div>
-                <div class="card feature-item"><h3>Live HTML Snippets</h3><p>Intelligently creates the correct HTML tag for you. It generates <code>&lt;script&gt;</code> tags for <code>.js</code> files and <code>&lt;link&gt;</code> tags for <code>.css</code> files.</p></div>
-                <div class="card feature-item"><h3>Direct Downloads</h3><p>Provides a direct download link for any file in the repository, which is useful for grabbing individual assets without cloning the entire project.</p></div>
-                <div class="card feature-item"><h3>Responsive UI</h3><p>Ensures a seamless and intuitive experience whether you are on a desktop, tablet, or mobile phone.</p></div>
-                <div class="card feature-item"><h3>Automatic Dark Mode</h3><p>The interface automatically syncs with your operating system's theme for comfortable viewing, day or night.</p></div>
-                <div class="card feature-item"><h3>Private Repo Support</h3><p>You can optionally provide a GitHub personal access token to browse files in private repositories you have access to.</p></div>
+                 <div class="card feature-item"><h3>Easy CDN Link Generation</h3><p>Converts standard GitHub file URLs into high-performance, globally distributed jsDelivr CDN links.</p></div>
+                <div class="card feature-item"><h3>Live HTML Snippets</h3><p>Intelligently creates the correct HTML tag (<code>&lt;script&gt;</code> or <code>&lt;link&gt;</code>) for easy embedding.</p></div>
+                <div class="card feature-item"><h3>Direct Downloads</h3><p>Provides a direct download link for any file in the repository without cloning the project.</p></div>
+                <div class="card feature-item"><h3>Responsive UI</h3><p>Ensures a seamless experience whether you are on a desktop, tablet, or mobile phone.</p></div>
+                <div class="card feature-item"><h3>Automatic Dark Mode</h3><p>The interface automatically syncs with your operating system's theme for comfortable viewing.</p></div>
+                <div class="card feature-item"><h3>Secure Authentication</h3><p>Login is handled securely via Google and GitHub, ensuring your account is safe.</p></div>
             </div>
         </div>
     </div>
 
     <footer>
         <div class="social-media">
-            <a href="https://github.com/anuxagfr" target="_blank" rel="noopener noreferrer" title="GitHub">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" title="Twitter / X">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" title="LinkedIn">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-            </a>
+             <a href="https://github.com/anuxagfr" target="_blank" rel="noopener noreferrer" title="GitHub"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a>
+            <a href="#" target="_blank" rel="noopener noreferrer" title="Twitter / X"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="#" target="_blank" rel="noopener noreferrer" title="LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
         </div>
         <p>Created by <a href="https://github.com/anuxagfr" target="_blank" rel="noopener noreferrer">anuxagfr</a></p>
         <p>Powered by jsDelivr + GitHub CDN</p>
@@ -141,17 +243,15 @@
 
     <script>
         // --- START: FIREBASE CONFIGURATION ---
-        // TODO: Replace with your app's Firebase project configuration
-         const firebaseConfig = {
-    apiKey: "AIzaSyC_U_pYSYWNm6Q1ufFwQE_tYlQZIYeDU0g",
-    authDomain: "cdn-generator.firebaseapp.com",
-    projectId: "cdn-generator",
-    storageBucket: "cdn-generator.firebasestorage.app",
-    messagingSenderId: "44677120607",
-    appId: "1:44677120607:web:b4719f7b7c6414cd19d1ea",
-    measurementId: "G-9RK16SGB09"
-  };
-
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_U_pYSYWNm6Q1ufFwQE_tYlQZIYeDU0g",
+            authDomain: "cdn-generator.firebaseapp.com",
+            projectId: "cdn-generator",
+            storageBucket: "cdn-generator.appspot.com",
+            messagingSenderId: "44677120607",
+            appId: "1:44677120607:web:b4719f7b7c6414cd19d1ea",
+            measurementId: "G-9RK16SGB09"
+        };
         // --- END: FIREBASE CONFIGURATION ---
 
         // --- INITIALIZATION ---
@@ -161,41 +261,61 @@
         const githubProvider = new firebase.auth.GithubAuthProvider();
 
         // --- DOM ELEMENT REFERENCES ---
-        const demoToolSection = document.getElementById('demo');
+        const loggedOutView = document.getElementById('logged-out-view');
+        const loginMainBtn = document.getElementById('login-main-btn');
+        const homePageSection = document.getElementById('home-page');
+        const welcomeUserName = document.getElementById('welcome-user-name');
         const loginNavBtn = document.getElementById('login-nav-btn');
         const userInfo = document.getElementById('user-info');
         const userNameSpan = document.getElementById('user-name');
+        const profilePicture = document.getElementById('profile-picture');
         const logoutButton = document.getElementById('logout-button');
         const authModal = document.getElementById('auth-modal');
         const closeModalBtn = document.querySelector('.close-btn');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const githubLoginBtn = document.getElementById('github-login-btn');
         const hamburger = document.querySelector('.hamburger');
-        const navLinks = document.querySelector('.nav-links');
+        const navLeft = document.querySelector('.nav-left');
+        const navToolLink = document.querySelector('.nav-tool-link');
 
         // --- MODAL CONTROL ---
-        loginNavBtn.onclick = () => { authModal.style.display = 'block'; };
+        const openLoginModal = () => { authModal.style.display = 'block'; };
+        loginNavBtn.onclick = openLoginModal;
+        loginMainBtn.onclick = openLoginModal;
         closeModalBtn.onclick = () => { authModal.style.display = 'none'; };
         window.onclick = (event) => {
-            if (event.target == authModal) {
-                authModal.style.display = 'none';
-            }
+            if (event.target == authModal) authModal.style.display = 'none';
         };
         
         // --- AUTHENTICATION ---
         auth.onAuthStateChanged(user => {
             if (user) {
-                userNameSpan.textContent = user.displayName || user.email;
+                const displayName = user.displayName || user.email;
+                userNameSpan.textContent = displayName;
+                welcomeUserName.textContent = displayName;
+                
+                if (user.photoURL) {
+                    profilePicture.src = user.photoURL;
+                } else {
+                    const initial = (displayName ? displayName.charAt(0) : '?').toUpperCase();
+                    profilePicture.src = `https://placehold.co/36x36/0d6efd/ffffff?text=${initial}`;
+                }
+
                 userInfo.style.display = 'flex';
                 loginNavBtn.style.display = 'none';
-                demoToolSection.classList.remove('hidden');
+                navToolLink.classList.remove('hidden');
+                loggedOutView.classList.add('hidden');
+                homePageSection.classList.remove('hidden');
                 authModal.style.display = 'none';
             } else {
                 userInfo.style.display = 'none';
                 loginNavBtn.style.display = 'block';
-                demoToolSection.classList.add('hidden');
+                navToolLink.classList.add('hidden');
+                loggedOutView.classList.remove('hidden');
+                homePageSection.classList.add('hidden');
             }
         });
+
         const signInWithProvider = (provider) => {
             auth.signInWithPopup(provider).catch(error => console.error("Auth Error", error));
         };
@@ -209,16 +329,14 @@
             document.body.classList.toggle('dark-mode', event.matches);
         }
         darkModeMediaQuery.addEventListener('change', updateTheme);
+        updateTheme(darkModeMediaQuery);
 
         // --- HAMBURGER MENU ---
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
+            navLeft.classList.toggle('active');
         });
     </script>
 </body>
 </html>
-
-
-
 
