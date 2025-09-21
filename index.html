@@ -317,8 +317,18 @@
         });
 
         const signInWithProvider = (provider) => {
-            auth.signInWithPopup(provider).catch(error => console.error("Auth Error", error));
+            auth.signInWithRedirect(provider);
         };
+
+        // After the user signs in on Google/GitHub, they are redirected back.
+        // This function checks for the result of that redirect.
+        auth.getRedirectResult()
+            .catch((error) => {
+                // Handle any errors that occurred during the redirect sign-in process.
+                console.error("Auth Error on redirect:", error);
+                alert("Login failed. Please try again. Error: " + error.message);
+            });
+
         googleLoginBtn.addEventListener('click', () => signInWithProvider(googleProvider));
         githubLoginBtn.addEventListener('click', () => signInWithProvider(githubProvider));
         logoutButton.addEventListener('click', () => auth.signOut());
@@ -339,4 +349,6 @@
     </script>
 </body>
 </html>
+
+
 
