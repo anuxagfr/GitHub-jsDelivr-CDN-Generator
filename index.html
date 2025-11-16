@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- SEO Optimization --><title>Anux CDN Generator: Convert GitHub to jsDelivr CDN Links Instantly</title>
+    <title>Anux CDN Generator: Convert GitHub to jsDelivr CDN Links Instantly</title>
     <meta name="description" content="Generate instant, high-performance CDN links and HTML snippets (JS, CSS, Images) directly from any GitHub repository using jsDelivr. Supports bulk ZIP download and private repos via Token.">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -45,25 +45,35 @@
 
         /* Logo specific styles */
         .logo-text {
-            color: #1f2937; /* Default text color, adjust for dark mode if needed */
+            color: #1f2937; /* Default text color */
         }
         .dark .logo-text {
             color: #f3f4f6; /* Light text in dark mode */
         }
-        .logo-icon {
-            fill: #3b82f6; /* Blue for the icon */
+        .logo-svg .main-path {
+            fill: #3b82f6; /* Blue for the main part of the icon */
+        }
+        .logo-svg .secondary-path {
+            fill: #60a5fa; /* Lighter blue for secondary elements, if any */
+        }
+        .dark .logo-svg .main-path {
+            fill: #3b82f6; /* Keep blue for main icon in dark mode */
+        }
+        .dark .logo-svg .secondary-path {
+            fill: #93c5fd; /* Adjust lighter blue for dark mode if needed */
         }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen font-sans">
 
-    <!-- Header & Navigation --><nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-10">
+    <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-10">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <a href="homepage.html" class="flex items-center space-x-2">
-                    <!-- LOGO SVG --><svg class="w-8 h-8 logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2L2 22H22L12 2ZM4.5 19.5L12 4.5L19.5 19.5H4.5ZM11 10V18H13V10H11Z" fill="currentColor"/>
-                        <circle cx="12" cy="15" r="2" fill="white"/> <!-- Represents a node/connection --></svg>
+                    <svg class="w-8 h-8 logo-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="main-path" d="M12 2L4 22H7L12 9L17 22H20L12 2Z"/>
+                        <path class="secondary-path" d="M19 14H22V16H19V14ZM2 14H5V16H2V14ZM10 20H14V22H10V20Z"/>
+                    </svg>
                     <span class="text-xl font-bold logo-text">Anux CDN Generator</span>
                 </a>
                 <div class="flex space-x-4">
@@ -76,7 +86,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section (Optimized for 'GitHub CDN Generator', 'jsDelivr') --><header class="text-center py-20 px-4 bg-gray-50 dark:bg-gray-800">
+    <header class="text-center py-20 px-4 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-3xl mx-auto">
             <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                 <span class="text-blue-500">GitHub</span> → jsDelivr CDN Generator Tool
@@ -91,14 +101,14 @@
         </div>
     </header>
 
-    <!-- Features Section (Detailed) --><section id="features" class="py-16 px-4">
+    <section id="features" class="py-16 px-4">
         <div class="max-w-4xl mx-auto">
             <h2 class="text-3xl font-bold text-center mb-12">Powerful Features for Modern Web Development</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-t-4 border-blue-500">
                     <div class="feature-icon mb-3">
-                        <!-- ICON: Simple Globe --><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a15.3 15.3 0 013 10 15.3 15.3 0 01-3 10M2 12h20"/>
                         </svg>
@@ -126,7 +136,7 @@
         </div>
     </section>
     
-    <!-- Use Case Section (New SEO Content) --><section id="uses" class="py-16 px-4">
+    <section id="uses" class="py-16 px-4">
         <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-3xl font-bold mb-8">Who Needs a GitHub CDN Generator?</h2>
             <div class="md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
@@ -150,7 +160,7 @@
         </div>
     </section>
 
-    <!-- Instructions Section --><section id="instructions" class="py-16 px-4 bg-gray-50 dark:bg-gray-800">
+    <section id="instructions" class="py-16 px-4 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-4xl mx-auto">
             <h2 class="text-3xl font-bold text-center mb-8">How to Use the Generator Tool</h2>
             <div class="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-8 text-center">
@@ -176,11 +186,11 @@
         </div>
     </section>
 
-    <!-- Footer --><footer class="py-10 border-t border-gray-200 dark:border-gray-700">
+    <footer class="py-10 border-t border-gray-200 dark:border-gray-700">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
              <div class="mt-4 mb-6 flex justify-center space-x-6">
                 <a href="https://github.com/anuxagfr" target="_blank" class="social-link" aria-label="GitHub">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
                 </a>
                 <a href="#" target="_blank" class="social-link" aria-label="Instagram">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4c0 3.2-2.6 5.8-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8C2 4.6 4.6 2 7.8 2zm-.2 2A5.6 5.6 0 004 7.6v8.8A5.6 5.6 0 007.6 20h8.8a5.6 5.6 0 003.6-3.6V7.6A5.6 5.6 0 0016.4 4H7.6zm9.2 1.3A1.5 1.5 0 1115.3 7 1.5 1.5 0 0116.8 5.3zm-4.8 2.6c-2.7 0-4.9 2.2-4.9 4.9s2.2 4.9 4.9 4.9 4.9-2.2 4.9-4.9-2.2-4.9-4.9-4.9zM12 16.3A3.8 3.8 0 1112 8.7a3.8 3.8 0 010 7.6z"/></svg>
