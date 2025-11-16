@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub → jsDelivr CDN Generator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load JSZip for client-side ZIP generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        /* Custom styles for dark mode and transitions */
+        :root {
+            --primary-color: #3b82f6; /* Tailwind blue-500 */
+            --primary-hover: #2563eb; /* Tailwind blue-600 */
+            --bg-dark: #1f2937; /* Tailwind gray-800 */
+            --text-light: #f3f4f6; /* Tailwind gray-100 */
+        }
+        
+        /* Fallback for system theme detection for dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--bg-dark);
+                color: var(--text-light);
+            }
+            input, summary, #fileList {
+                color: #e5e7eb; /* Tailwind gray-200 */
+                background-color: #374151; /* Tailwind gray-700 */
+                border-color: #4b5563; /* Tailwind gray-600 */
+            }
+        }
+        
+        /* Ensure inputs and list look good in light mode too */
+        input {
+            transition: all 0.2s ease;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* blue-500 shadow */
+        }
+
+        /* Styling for list and scrollbar */
+        #fileList {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .link-icon:hover svg {
+            color: var(--primary-color);
+        }
+
+        /* Custom alert positioning */
+        #customAlert {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #customAlert.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen font-sans p-4">
+
+    <!-- Header -->
+    <header class="text-center py-6">
+        <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl text-blue-500">
+            GitHub → jsDelivr CDN Generator
+        </h1>
+        <p class="mt-2 text-base text-gray-500 dark:text-gray-400">
+            Instantly generate high-performance CDN links for your GitHub files.
+        </p>
+    </header>
+
+    <div class="max-w-xl mx-auto">
+        <!-- Main Tool Card -->
+        <div id="demo" class="bg-white dark:bg-gray-800 shadow-xl rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold mb-6">Repository Details</h2>
+            
+            <div class="space-y-4">
+                <div class="form-group">
+                    <label for="user" class="block text-sm font-medium mb-1">GitHub Username</label>
+                    <input type="text" id="user" placeholder="e.g., anuxagfr" value="anuxagfr" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200">
+                </div>
+                <div class="form-group">
+                    <label for="repo" class="block text-sm font-medium mb-1">Repository Name</label>
+                    <input type="text" id="repo" placeholder="e.g., GitHub-jsDelivr-CDN-Generator" value="GitHub-jsDelivr-CDN-Generator" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200">
+                </div>
+                <div class="form-group">
+                    <label for="branch" class="block text-sm font-medium mb-1">Branch</label>
+                    <input type="text" id="branch" placeholder="e.g., main" value="main" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200">
+                </div>
+
+                <details class="group">
+                    <summary id="token-details" class="cursor-pointer text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors duration-150 p-2 -ml-2 rounded-lg">
+                        Advanced: Add Token for Private Repos / Higher Rate Limit
+                    </summary>
+                    <div class="form-group pt-4">
+                        <label for="token" class="block text-sm font-medium mb-1">GitHub Personal Access Token (Optional)</label>
+                        <input type="password" id="token" placeholder="Enter token here (e.g., ghp_...)" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200">
+                    </div>
+                </details>
+            </div>
+            
+            <button class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md" onclick="fetchFiles()">
+                Browse Files
+            </button>
+            <p id="status-message" class="mt-4 text-center text-sm text-red-500 dark:text-red-400"></p>
+
+            <!-- File Browser Section -->
+            <div id="file-browser" class="hidden mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="form-group mb-4">
+                    <input type="text" id="search" onkeyup="filterFiles()" placeholder="Search for a file..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-200">
+                </div>
+                <button id="zip-download-button" class="w-full mb-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md" onclick="downloadAllAsZip()">
+                    Download All Files as ZIP
+                </button>
+                <ul id="fileList" class="border border-gray-300 dark:border-gray-600 rounded-lg divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden"></ul>
+            </div>
+        </div>
+
+        <!-- Output Card -->
+        <div id="output-container" class="bg-white dark:bg-gray-800 shadow-xl rounded-xl p-6 hidden border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold mb-6">Generated Links</h2>
+            <div id="output" class="space-y-4">
+                <!-- Content generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Alert -->
+    <div id="customAlert" class="bg-green-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg">Copied to clipboard!</div>
+
+    <script>
+        let fileCache = [];
+        const statusMessage = document.getElementById("status-message");
+        const fileBrowser = document.getElementById("file-browser");
+        const outputContainer = document.getElementById("output-container");
+        const zipButton = document.getElementById("zip-download-button");
+
+        // Set dark mode based on system preference
+        (function() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark');
+            }
+        })();
+
+        // A simple function to escape the text for use in a single-quoted JS string within an HTML attribute.
+        const escapeHtmlForOnclick = (str) => {
+            if (!str) return '';
+            // 1. Escape backslashes first: \ -> \\
+            // 2. Escape single quotes, as they delimit the argument in the onclick handler: ' -> \'
+            return str.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        };
+
+        // Function to fetch file tree from GitHub API
+        function fetchFiles() {
+            const user = document.getElementById("user").value.trim();
+            const repo = document.getElementById("repo").value.trim();
+            const branch = document.getElementById("branch").value.trim() || "main";
+            const token = document.getElementById("token").value.trim();
+
+            if (!user || !repo) {
+                statusMessage.textContent = "GitHub Username and Repository Name are required.";
+                return;
+            }
+
+            statusMessage.textContent = "Fetching repository data...";
+            fileBrowser.classList.add("hidden");
+            outputContainer.classList.add("hidden");
+
+            const githubApiUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`;
+            const headers = token ? { Authorization: `token ${token}` } : {};
+
+            fetch(githubApiUrl, { headers: headers })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.tree || data.message) {
+                    throw new Error(data.message || "Invalid repository, branch, or token.");
+                }
+                // Filter only 'blob' (files), ignoring 'tree' (folders)
+                fileCache = data.tree.filter(f => f.type === "blob");
+                renderFileList(fileCache, user, repo, branch);
+                statusMessage.textContent = `Success! Found ${fileCache.length} files.`;
+                fileBrowser.classList.remove("hidden");
+                document.getElementById("search").value = "";
+                zipButton.disabled = fileCache.length === 0; // Disable zip button if no files
+            })
+            .catch(err => {
+                statusMessage.textContent = `Error: ${err.message}. Check your inputs or GitHub API rate limit.`;
+            });
+        }
+        
+        // Function to download all files as a single ZIP archive
+        async function downloadAllAsZip() {
+            if (fileCache.length === 0) {
+                statusMessage.textContent = "No files to download. Please browse a repository first.";
+                return;
+            }
+
+            // Get current repository details for filename
+            const user = document.getElementById("user").value.trim();
+            const repo = document.getElementById("repo").value.trim();
+            const branch = document.getElementById("branch").value.trim() || "main";
+
+            const zip = new JSZip();
+            let downloadPromises = [];
+            let filesProcessed = 0;
+            
+            // Disable button and show progress
+            const originalButtonText = "Download All Files as ZIP";
+            zipButton.disabled = true;
+            zipButton.textContent = "Preparing files for download (0%)...";
+
+            for (let i = 0; i < fileCache.length; i++) {
+                const file = fileCache[i];
+                const cdnLink = `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${file.path}`;
+                
+                // Define an async function to fetch and add the file
+                const promise = fetch(cdnLink)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`Failed to fetch ${file.path}: ${res.statusText}`);
+                        return res.arrayBuffer(); // Get file data as ArrayBuffer for binary files
+                    })
+                    .then(data => {
+                        zip.file(file.path, data, { binary: true });
+                        filesProcessed++;
+                        
+                        // Update progress on the button
+                        const progress = Math.round((filesProcessed / fileCache.length) * 100);
+                        zipButton.textContent = `Preparing files for download (${progress}%)...`;
+                    })
+                    .catch(error => {
+                        console.error(`Error adding file ${file.path} to zip:`, error);
+                        // Add a placeholder file indicating the download failed
+                        zip.file(`${file.path}.download_failed.txt`, `Download failed for file: ${file.path}. Error: ${error.message}`);
+                        filesProcessed++;
+                        // Update progress even on failure
+                        const progress = Math.round((filesProcessed / fileCache.length) * 100);
+                        zipButton.textContent = `Preparing files for download (${progress}%)...`;
+                    });
+                
+                downloadPromises.push(promise);
+            }
+
+            try {
+                // Wait for all fetches to finish (success or failure)
+                await Promise.allSettled(downloadPromises);
+                
+                statusMessage.textContent = "Generating ZIP archive. This may take a moment...";
+                zipButton.textContent = "Generating ZIP...";
+
+                // Generate the ZIP file
+                const zipContent = await zip.generateAsync({ type: "blob" });
+
+                // Create a download link and trigger click
+                const filename = `${repo}-${branch}-cdn.zip`;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipContent);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                zipButton.textContent = originalButtonText;
+                zipButton.disabled = false;
+                showCopyAlert("Download started!", "bg-green-500");
+                statusMessage.textContent = `Successfully generated and started download for ${filename}.`;
+
+            } catch (e) {
+                statusMessage.textContent = `Critical Error during ZIP generation: ${e.message}`;
+                zipButton.textContent = originalButtonText;
+                zipButton.disabled = false;
+                showCopyAlert("ZIP generation failed.", "bg-red-500");
+            }
+        }
+
+        // Function to render the list of files
+        function renderFileList(files, user, repo, branch) {
+            const list = document.getElementById("fileList");
+            list.innerHTML = "";
+            
+            if (files.length === 0) {
+                list.innerHTML = `<li class="p-4 text-center text-gray-500 dark:text-gray-400">No files found.</li>`;
+                return;
+            }
+            
+            files.forEach(f => {
+                // Construct the jsDelivr CDN link
+                const cdn = `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${f.path}`;
+                const li = document.createElement("li");
+                li.className = "flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150";
+                li.innerHTML = `
+                    <span class="truncate pr-4 text-sm">${f.path}</span>
+                    <button class="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition duration-200" onclick="showCDN('${cdn}', '${f.path}')">
+                        Generate Link
+                    </button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Function to display CDN link and file info
+        function showCDN(cdnLink, path) {
+            outputContainer.classList.remove("hidden");
+            const output = document.getElementById("output");
+            output.innerHTML = "<p class='text-center text-gray-500 dark:text-gray-400'>Loading file details...</p>";
+            
+            const ext = path.split('.').pop().toLowerCase();
+            const fileName = path.split('/').pop();
+            let tagValue = "";
+
+            // Determine appropriate HTML tag based on extension
+            if (ext === "js") {
+                tagValue = `<script src="${cdnLink}"><\/script>`;
+            } else if (ext === "css") {
+                tagValue = `<link rel="stylesheet" href="${cdnLink}">`;
+            } else if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext)) {
+                tagValue = `<img src="${cdnLink}" alt="${fileName}">`;
+            }
+            
+            // Escape tagValue for safe insertion into the copyToClipboard() function call's argument
+            const escapedTagValueForOnclick = escapeHtmlForOnclick(tagValue);
+
+            // Use HEAD request to get file size and type (faster than full GET)
+            fetch(cdnLink, { method: 'HEAD' })
+                .then(res => {
+                    const size = res.headers.get("content-length");
+                    const sizeKB = size ? (parseInt(size) / 1024).toFixed(2) : "Unknown";
+                    const type = res.headers.get("content-type") || "Unknown";
+
+                    output.innerHTML = `
+                        <p class="text-sm">
+                            <span class="font-semibold">File Name:</span> ${fileName}<br>
+                            <span class="font-semibold">Type:</span> ${type.split(';')[0]}<br>
+                            <span class="font-semibold">Size:</span> ${sizeKB} KB
+                        </p>
+
+                        <!-- CDN Link Output -->
+                        <div class="space-y-2">
+                            <p class="font-semibold text-sm pt-2">CDN Link:</p>
+                            <div class="flex">
+                                <input id="cdnInput" value="${cdnLink}" readonly class="flex-grow p-3 border border-gray-300 dark:border-gray-600 rounded-l-lg bg-gray-50 dark:bg-gray-700 text-sm truncate">
+                                <button class="link-icon bg-gray-200 dark:bg-gray-600 p-3 rounded-r-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-150" onclick="copyToClipboard('${cdnLink}')" title="Copy">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="text-gray-600 dark:text-gray-300" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        ${tagValue ? `
+                        <!-- HTML Tag Output -->
+                        <div class="space-y-2 pt-2">
+                            <p class="font-semibold text-sm">HTML Tag:</p>
+                            <div class="flex">
+                                <input id="tagInput" value='${tagValue}' readonly class="flex-grow p-3 border border-gray-300 dark:border-gray-600 rounded-l-lg bg-gray-50 dark:bg-gray-700 text-sm truncate">
+                                <button class="link-icon bg-gray-200 dark:bg-gray-600 p-3 rounded-r-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-150" onclick="copyToClipboard('${escapedTagValueForOnclick}')" title="Copy">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="text-gray-600 dark:text-gray-300" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3z"/></svg>
+                                </button>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Note: For images, you may need to manually add size and style attributes.</div>
+                        </div>` : ''}
+
+                        <a class="inline-block mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-md text-sm" href="${cdnLink}" download="${fileName}">Download File</a>
+                    `;
+                    outputContainer.scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(() => {
+                    output.innerHTML = `
+                        <p class="text-red-500 dark:text-red-400">Could not fetch file details (size/type).</p>
+                        <a class="inline-block mt-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-md text-sm" href="${cdnLink}" download="${fileName}">Download File</a>
+                    `;
+                });
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            // Fallback for secure copy since navigator.clipboard may be restricted in some environments
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopyAlert("Copied to clipboard!", "bg-green-500");
+            } catch (err) {
+                statusMessage.textContent = 'Copy failed. Please copy manually.';
+            }
+            document.body.removeChild(textArea);
+        }
+        
+        // Function to display the copy success alert
+        function showCopyAlert(message, colorClass = "bg-green-500") {
+            const alert = document.getElementById("customAlert");
+            // Reset colors and apply new color/message
+            alert.className = `bg-green-500 bg-red-500 ${colorClass} text-white font-semibold py-3 px-6 rounded-lg shadow-lg`;
+            alert.textContent = message;
+            
+            alert.classList.add("show");
+            setTimeout(() => {
+                alert.classList.remove("show");
+            }, 3000);
+        }
+
+        // Function to filter the file list
+        function filterFiles() {
+            const keyword = document.getElementById("search").value.toLowerCase();
+            const filtered = fileCache.filter(f => f.path.toLowerCase().includes(keyword));
+            const user = document.getElementById("user").value;
+            const repo = document.getElementById("repo").value;
+            const branch = document.getElementById("branch").value || "main";
+            renderFileList(filtered, user, repo, branch);
+        }
+    </script>
+</body>
+</html>
