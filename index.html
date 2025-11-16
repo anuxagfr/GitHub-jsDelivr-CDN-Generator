@@ -3,352 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - CDN Generator</title>
-    
-    <!-- Firebase SDK Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-
+    <!-- SEO Optimization --><title>Anux CDN Generator: Convert GitHub to jsDelivr CDN Links Instantly</title>
+    <meta name="description" content="Generate instant, high-performance CDN links and HTML snippets (JS, CSS, Images) directly from any GitHub repository using jsDelivr. Supports bulk ZIP download and private repos via Token.">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- THEME VARIABLES --- */
+        /* Custom styles for dark mode and transitions */
         :root {
-            --primary-color: #0d6efd; --primary-hover: #0b5ed7;
-            --text-dark: #212529; --text-light: #6c757d;
-            --bg-light: #f8f9fa; --bg-white: #ffffff;
-            --border-color: #dee2e6; --danger-color: #dc3545;
-            --danger-hover: #c82333; --google-blue: #4285F4;
-            --github-dark: #333; --shadow-color: rgba(0,0,0,0.05);
-            --theme-transition: background-color 0.3s ease, color 0.3s ease;
+            --primary-color: #3b82f6; /* Tailwind blue-500 */
+            --primary-hover: #2563eb; /* Tailwind blue-600 */
+            --bg-dark: #1f2937; /* Tailwind gray-800 */
+            --text-light: #f3f4f6; /* Tailwind gray-100 */
         }
-
-        /* --- DARK MODE THEME --- */
-        body.dark-mode {
-            --primary-color: #4dabf7; --primary-hover: #74c0fc;
-            --text-dark: #e9ecef; --text-light: #adb5bd;
-            --bg-light: #121212; --bg-white: #1e1e1e;
-            --border-color: #495057; --danger-color: #e03131;
-            --danger-hover: #f03e3e; --shadow-color: rgba(255,255,255,0.05);
-        }
-
-        /* --- GENERAL & LAYOUT STYLES --- */
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-light); color: var(--text-dark);
-            margin: 0; padding: 60px 0 0; line-height: 1.6;
-            transition: var(--theme-transition);
-        }
-        .container { max-width: 960px; margin: 0 auto; padding: 20px; }
-        .section { padding: 60px 20px 40px; }
-        .section h2 { text-align: center; margin-bottom: 30px; font-size: 2em; }
-        .hidden { display: none; }
-
-        /* --- NAVIGATION BAR --- */
-        nav {
-            background-color: var(--bg-white); padding: 0 20px;
-            box-shadow: 0 2px 5px var(--shadow-color); position: fixed;
-            top: 0; width: 100%; height: 60px; z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
-            box-sizing: border-box; border-bottom: 1px solid var(--border-color);
-            transition: var(--theme-transition), border-bottom 0.3s ease;
-        }
-        .nav-container { display: flex; align-items: center; width: 100%; max-width: 960px; }
-        .nav-left { display: flex; align-items: center; gap: 30px; }
-        .logo { font-size: 1.5em; font-weight: bold; color: var(--primary-color); text-decoration: none; }
-        .nav-links { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 20px; }
-        .nav-links a { color: var(--text-dark); text-decoration: none; font-weight: 500; transition: color 0.3s ease; cursor: pointer; }
-        .nav-links a:hover { color: var(--primary-color); }
-        .nav-actions { display: flex; align-items: center; gap: 15px; margin-left: auto; }
-        .hamburger { display: none; cursor: pointer; background: none; border: none; padding: 0; z-index: 1001;}
-        .hamburger .bar { display: block; width: 25px; height: 3px; margin: 5px auto; background-color: var(--text-dark); transition: all 0.3s ease-in-out; }
-
-        /* --- HEADER & FOOTER --- */
-        header { text-align: center; padding: 40px 20px; }
-        header h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-color); }
-        header p { font-size: 1.2em; color: var(--text-light); }
-        footer { text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid var(--border-color); font-size: 0.9em; color: var(--text-light); transition: var(--theme-transition), border-top 0.3s ease; }
-        footer a { color: var(--primary-color); text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
-
-        /* --- CARDS --- */
-        .card {
-            background-color: var(--bg-white); padding: 25px; margin-bottom: 20px;
-            border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color);
-            border: 1px solid var(--border-color);
-            transition: var(--theme-transition), border 0.3s ease;
-        }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .feature-item { padding: 20px; border-left: 3px solid var(--primary-color); }
-        .card ol, .card ul { padding-left: 20px; margin: 0; }
-        code { background-color: var(--border-color); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: var(--text-dark); }
-
-        /* --- BUTTONS & USER PROFILE --- */
-        .cta-button { display: inline-block; background-color: var(--primary-color); color: var(--bg-white) !important; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 20px; border: none; cursor: pointer; transition: background-color 0.3s ease; }
-        .cta-button:hover { background-color: var(--primary-hover); }
-        .nav-actions button { border: none; padding: 8px 16px; border-radius: 5px; font-size: 0.9em; font-weight: 500; cursor: pointer; transition: background-color 0.3s ease; }
-        #login-nav-btn { background-color: var(--primary-color); color: white; }
-        #login-nav-btn:hover { background-color: var(--primary-hover); }
-        #user-info { display: none; align-items: center; gap: 10px; }
-        #user-name { font-weight: 500; }
-        #logout-button { background-color: var(--danger-color); color: white; }
-        #logout-button:hover { background-color: var(--danger-hover); }
-        .profile-picture { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
-
-        /* --- MODAL STYLES --- */
-        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: var(--bg-white); margin: 15vh auto; padding: 25px 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: var(--theme-transition); }
-        .close-btn { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-btn:hover { color: var(--text-dark); }
-        .login-buttons-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .login-btn { display: inline-flex; align-items: center; justify-content: center; border: none; padding: 12px 20px; border-radius: 5px; font-size: 1em; font-weight: 500; cursor: pointer; transition: opacity 0.3s ease; }
-        .login-btn:hover { opacity: 0.9; }
-        .login-btn svg { width: 20px; height: 20px; margin-right: 10px; }
-        #google-login-btn { background-color: var(--google-blue); color: white; }
-        #github-login-btn { background-color: var(--github-dark); color: white; }
-
-        /* --- Social Media Icon Styles --- */
-        .social-media { margin-bottom: 15px; }
-        .social-media a { display: inline-block; margin: 0 10px; text-decoration: none; }
-        .social-media svg { width: 24px; height: 24px; fill: var(--text-light); transition: fill 0.3s ease; }
-        .social-media a:hover svg { fill: var(--primary-color); }
         
-        /* --- RESPONSIVE STYLES --- */
-        @media (max-width: 768px) {
-            .nav-left { display: none; flex-direction: column; gap: 20px; align-items: center; width: 100%; background-color: var(--bg-white); position: absolute; top: 60px; left: 0; padding: 20px 0; box-shadow: 0 2px 5px var(--shadow-color); border-top: 1px solid var(--border-color); }
-            .nav-left.active { display: flex; }
-            .nav-links { flex-direction: column; gap: 15px; margin-left: 0; }
-            .hamburger { display: block; }
-            .hamburger.active .bar:nth-child(2) { opacity: 0; }
-            .hamburger.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-            .hamburger.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+        /* Fallback for system theme detection for dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: var(--bg-dark);
+                color: var(--text-light);
+            }
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white !important;
+            transition: background-color 0.2s ease;
+        }
+        .cta-button:hover {
+            background-color: var(--primary-hover);
+        }
+        .feature-icon {
+            color: var(--primary-color);
+        }
+        .social-link {
+            transition: color 0.2s;
+            color: #6b7280; /* Tailwind gray-500 */
+        }
+        .social-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* Logo specific styles */
+        .logo-text {
+            color: #1f2937; /* Default text color, adjust for dark mode if needed */
+        }
+        .dark .logo-text {
+            color: #f3f4f6; /* Light text in dark mode */
+        }
+        .logo-icon {
+            fill: #3b82f6; /* Blue for the icon */
         }
     </style>
 </head>
-<body>
-    
-    <script>
-        (function() {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.body.classList.add('dark-mode');
-            }
-        })();
-    </script>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen font-sans">
 
-    <nav>
-        <div class="nav-container">
-            <div class="nav-left">
-                <a href="index.html" class="logo">CDN Generator</a>
-                <ul class="nav-links">
-                    <li class="nav-tool-link hidden"><a href="tool.html">Tool</a></li>
-                    <li><a href="#details">Details</a></li>
-                    <li><a href="#how-to-use">How to Use</a></li>
-                    <li><a href="#features">Features</a></li>
-                </ul>
-            </div>
-            <div class="nav-actions">
-                <button id="login-nav-btn">Login</button>
-                <div id="user-info">
-                    <img id="profile-picture" src="https://placehold.co/36x36/eee/ccc?text=?" alt="Profile Picture" class="profile-picture">
-                    <span id="user-name"></span>
-                    <button id="logout-button">Logout</button>
+    <!-- Header & Navigation --><nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="homepage.html" class="flex items-center space-x-2">
+                    <!-- LOGO SVG --><svg class="w-8 h-8 logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2L2 22H22L12 2ZM4.5 19.5L12 4.5L19.5 19.5H4.5ZM11 10V18H13V10H11Z" fill="currentColor"/>
+                        <circle cx="12" cy="15" r="2" fill="white"/> <!-- Represents a node/connection --></svg>
+                    <span class="text-xl font-bold logo-text">Anux CDN Generator</span>
+                </a>
+                <div class="flex space-x-4">
+                    <a href="cdn_generator.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-500 font-medium">Tool</a>
+                    <a href="#features" class="text-gray-600 dark:text-gray-300 hover:text-blue-500 font-medium">Features</a>
+                    <a href="#instructions" class="text-gray-600 dark:text-gray-300 hover:text-blue-500 font-medium">How To Use</a>
+                    <a href="#uses" class="text-gray-600 dark:text-gray-300 hover:text-blue-500 font-medium">Use Cases</a>
                 </div>
             </div>
-            <button class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
         </div>
     </nav>
+
+    <!-- Hero Section (Optimized for 'GitHub CDN Generator', 'jsDelivr') --><header class="text-center py-20 px-4 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+                <span class="text-blue-500">GitHub</span> → jsDelivr CDN Generator Tool
+            </h1>
+            <p class="mt-4 text-xl text-gray-600 dark:text-gray-300">
+                The fastest way to convert GitHub files into **global, reliable CDN links**. Access JavaScript, CSS, and image assets from any public repository instantly.
+            </p>
+            <a href="cdn_generator.html" class="cta-button mt-8 inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105">
+                Start Generating CDN Links Now
+            </a>
+            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">Simplify your web development workflow with our free, no-login-required CDN tool.</p>
+        </div>
+    </header>
+
+    <!-- Features Section (Detailed) --><section id="features" class="py-16 px-4">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">Powerful Features for Modern Web Development</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-t-4 border-blue-500">
+                    <div class="feature-icon mb-3">
+                        <!-- ICON: Simple Globe --><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a15.3 15.3 0 013 10 15.3 15.3 0 01-3 10M2 12h20"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Instant Global CDN Links</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Generate **jsDelivr CDN URLs** for JavaScript, CSS, and images, guaranteeing fast content delivery worldwide. Say goodbye to manual URL formatting.</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-t-4 border-blue-500">
+                    <div class="feature-icon mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Auto-Generated HTML Tags</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Receive the correct, ready-to-use HTML snippet (`&lt;script&gt;`, `&lt;link rel="stylesheet"&gt;`, or `&lt;img&gt;`) for effortless integration into your projects.</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-t-4 border-blue-500">
+                    <div class="feature-icon mb-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Bulk Repository Download</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Need local copies? Download the entire contents of a specified GitHub branch as a single, convenient **ZIP archive**.</p>
+                </div>
+            </div>
+        </div>
+    </section>
     
-    <div id="auth-modal" class="modal">
-        <!-- Login Modal Content -->
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h3>Sign In</h3>
-            <p>Choose a provider to continue</p>
-            <div class="login-buttons-container">
-                <button id="google-login-btn" class="login-btn">
-                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path d="M1 1h22v22H1z" fill="none"/></svg>
-                    <span>Sign in with Google</span>
-                </button>
-                <button id="github-login-btn" class="login-btn">
-                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-                    <span>Sign in with GitHub</span>
-                </button>
+    <!-- Use Case Section (New SEO Content) --><section id="uses" class="py-16 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-8">Who Needs a GitHub CDN Generator?</h2>
+            <div class="md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+                <div class="p-4 rounded-xl dark:bg-gray-800 shadow-sm">
+                    <h4 class="font-bold text-lg text-blue-500">Frontend Developers</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Quickly test assets, CSS frameworks, or JavaScript libraries hosted on GitHub.</p>
+                </div>
+                <div class="p-4 rounded-xl dark:bg-gray-800 shadow-sm">
+                    <h4 class="font-bold text-lg text-blue-500">Open Source Maintainers</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Provide developers with easy CDN links for rapid prototyping and integration.</p>
+                </div>
+                <div class="p-4 rounded-xl dark:bg-gray-800 shadow-sm">
+                    <h4 class="font-bold text-lg text-blue-500">Freelancers & Designers</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Host simple static assets like images, fonts, and stylesheets for client sites without dedicated hosting.</p>
+                </div>
+                <div class="p-4 rounded-xl dark:bg-gray-800 shadow-sm">
+                    <h4 class="font-bold text-lg text-blue-500">Learners & Students</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Practice linking external scripts and styles in your local HTML files effortlessly.</p>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="container">
-        <!-- Logged Out Content -->
-        <div id="logged-out-view">
-            <header>
-                <h1>GitHub → jsDelivr CDN Generator</h1>
-                <p>A powerful tool to generate CDN links directly from GitHub repositories.</p>
-                <button id="login-main-btn" class="cta-button">Login to Get Started</button>
-            </header>
-        </div>
+    <!-- Instructions Section --><section id="instructions" class="py-16 px-4 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">How to Use the Generator Tool</h2>
+            <div class="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-8 text-center">
+                
+                <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <span class="text-4xl font-extrabold text-blue-500">1</span>
+                    <h3 class="text-xl font-semibold mt-4 mb-2">Identify Repository</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Input the **GitHub Username**, **Repository Name**, and **Branch** (e.g., `main`) into the form.</p>
+                </div>
 
-        <!-- Logged In Home Page Content -->
-        <div id="home-page" class="section card hidden">
-            <h2>Welcome, <span id="welcome-user-name"></span>!</h2>
-            <p>You are now logged in. You can start generating CDN links or explore the features of the tool below.</p>
-            <a href="tool.html" class="cta-button">Go to Generator Tool</a>
-        </div>
+                <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <span class="text-4xl font-extrabold text-blue-500">2</span>
+                    <h3 class="text-xl font-semibold mt-4 mb-2">Fetch & Browse</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Click **Browse Files** to fetch the file structure. Use the search bar to filter assets quickly.</p>
+                </div>
 
-        <!-- Informational sections, always visible -->
-        <div id="details" class="section card">
-            <h2>Finding Your Details</h2>
-            <p>For example, in the URL <code>https://github.com/facebook/react</code>:</p>
-            <ul>
-                <li>The <strong>username</strong> is <code>facebook</code>.</li>
-                <li>The <strong>repository name</strong> is <code>react</code>.</li>
-            </ul>
-            <p>The <strong>branch</strong> is usually <code>main</code> or <code>master</code>, found in a dropdown on the repository's main page.</p>
-        </div>
-
-        <div id="how-to-use" class="section card">
-            <h2>How to Use</h2>
-            <ol>
-                <li><strong>Sign In:</strong> Click 'Login' and authenticate via the pop-up.</li>
-                <li><strong>Navigate to Tool:</strong> Go to the generator tool from the home page or navigation bar.</li>
-                <li><strong>Enter Details:</strong> Fill in the GitHub username, repository name, and branch.</li>
-                <li><strong>Browse & Generate:</strong> Click 'Browse Files', select a file, and the CDN link will be generated instantly.</li>
-            </ol>
-        </div>
-
-        <div id="features" class="section">
-            <h2>Features</h2>
-            <div class="features-grid">
-                 <div class="card feature-item"><h3>Easy CDN Link Generation</h3><p>Converts standard GitHub file URLs into high-performance, globally distributed jsDelivr CDN links.</p></div>
-                <div class="card feature-item"><h3>Live HTML Snippets</h3><p>Intelligently creates the correct HTML tag (<code>&lt;script&gt;</code> or <code>&lt;link&gt;</code>) for easy embedding.</p></div>
-                <div class="card feature-item"><h3>Direct Downloads</h3><p>Provides a direct download link for any file in the repository without cloning the project.</p></div>
-                <div class="card feature-item"><h3>Responsive UI</h3><p>Ensures a seamless experience whether you are on a desktop, tablet, or mobile phone.</p></div>
-                <div class="card feature-item"><h3>Automatic Dark Mode</h3><p>The interface automatically syncs with your operating system's theme for comfortable viewing.</p></div>
-                <div class="card feature-item"><h3>Secure Authentication</h3><p>Login is handled securely via Google and GitHub, ensuring your account is safe.</p></div>
+                <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <span class="text-4xl font-extrabold text-blue-500">3</span>
+                    <h3 class="text-xl font-semibold mt-4 mb-2">Deploy or Download</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Click **Generate Link** to get the CDN URL, or use the **ZIP** button for a full repository download.</p>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <footer>
-        <div class="social-media">
-             <a href="https://github.com/anuxagfr" target="_blank" rel="noopener noreferrer" title="GitHub"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a>
-            <a href="#" target="_blank" rel="noopener noreferrer" title="Twitter / X"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="#" target="_blank" rel="noopener noreferrer" title="LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+    <!-- Footer --><footer class="py-10 border-t border-gray-200 dark:border-gray-700">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+             <div class="mt-4 mb-6 flex justify-center space-x-6">
+                <a href="https://github.com/anuxagfr" target="_blank" class="social-link" aria-label="GitHub">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                </a>
+                <a href="#" target="_blank" class="social-link" aria-label="Instagram">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4c0 3.2-2.6 5.8-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8C2 4.6 4.6 2 7.8 2zm-.2 2A5.6 5.6 0 004 7.6v8.8A5.6 5.6 0 007.6 20h8.8a5.6 5.6 0 003.6-3.6V7.6A5.6 5.6 0 0016.4 4H7.6zm9.2 1.3A1.5 1.5 0 1115.3 7 1.5 1.5 0 0116.8 5.3zm-4.8 2.6c-2.7 0-4.9 2.2-4.9 4.9s2.2 4.9 4.9 4.9 4.9-2.2 4.9-4.9-2.2-4.9-4.9-4.9zM12 16.3A3.8 3.8 0 1112 8.7a3.8 3.8 0 010 7.6z"/></svg>
+                </a>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                A free utility for developers to access **jsDelivr CDN** links from their **GitHub repositories**.
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                &copy; 2025 Anux CDN Generator. All rights reserved. | <a href="cdn_generator.html" class="text-blue-500 hover:underline">Go to Tool</a>
+            </p>
         </div>
-        <p>Created by <a href="https://github.com/anuxagfr" target="_blank" rel="noopener noreferrer">anuxagfr</a></p>
-        <p>Powered by jsDelivr + GitHub CDN</p>
     </footer>
 
     <script>
-        // --- START: FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyC_U_pYSYWNm6Q1ufFwQE_tYlQZIYeDU0g",
-            authDomain: "cdn-generator.firebaseapp.com",
-            projectId: "cdn-generator",
-            storageBucket: "cdn-generator.appspot.com",
-            messagingSenderId: "44677120607",
-            appId: "1:44677120607:web:b4719f7b7c6414cd19d1ea",
-            measurementId: "G-9RK16SGB09"
-        };
-        // --- END: FIREBASE CONFIGURATION ---
-
-        // --- INITIALIZATION ---
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
-        const githubProvider = new firebase.auth.GithubAuthProvider();
-
-        // --- DOM ELEMENT REFERENCES ---
-        const loggedOutView = document.getElementById('logged-out-view');
-        const loginMainBtn = document.getElementById('login-main-btn');
-        const homePageSection = document.getElementById('home-page');
-        const welcomeUserName = document.getElementById('welcome-user-name');
-        const loginNavBtn = document.getElementById('login-nav-btn');
-        const userInfo = document.getElementById('user-info');
-        const userNameSpan = document.getElementById('user-name');
-        const profilePicture = document.getElementById('profile-picture');
-        const logoutButton = document.getElementById('logout-button');
-        const authModal = document.getElementById('auth-modal');
-        const closeModalBtn = document.querySelector('.close-btn');
-        const googleLoginBtn = document.getElementById('google-login-btn');
-        const githubLoginBtn = document.getElementById('github-login-btn');
-        const hamburger = document.querySelector('.hamburger');
-        const navLeft = document.querySelector('.nav-left');
-        const navToolLink = document.querySelector('.nav-tool-link');
-
-        // --- MODAL CONTROL ---
-        const openLoginModal = () => { authModal.style.display = 'block'; };
-        loginNavBtn.onclick = openLoginModal;
-        loginMainBtn.onclick = openLoginModal;
-        closeModalBtn.onclick = () => { authModal.style.display = 'none'; };
-        window.onclick = (event) => {
-            if (event.target == authModal) authModal.style.display = 'none';
-        };
-        
-        // --- AUTHENTICATION ---
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                const displayName = user.displayName || user.email;
-                userNameSpan.textContent = displayName;
-                welcomeUserName.textContent = displayName;
-                
-                if (user.photoURL) {
-                    profilePicture.src = user.photoURL;
-                } else {
-                    const initial = (displayName ? displayName.charAt(0) : '?').toUpperCase();
-                    profilePicture.src = `https://placehold.co/36x36/0d6efd/ffffff?text=${initial}`;
-                }
-
-                userInfo.style.display = 'flex';
-                loginNavBtn.style.display = 'none';
-                navToolLink.classList.remove('hidden');
-                loggedOutView.classList.add('hidden');
-                homePageSection.classList.remove('hidden');
-                authModal.style.display = 'none';
-            } else {
-                userInfo.style.display = 'none';
-                loginNavBtn.style.display = 'block';
-                navToolLink.classList.add('hidden');
-                loggedOutView.classList.remove('hidden');
-                homePageSection.classList.add('hidden');
+        // Set dark mode based on system preference on initial load
+        (function() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark');
             }
-        });
-
-        const signInWithProvider = (provider) => {
-            auth.signInWithRedirect(provider);
-        };
-
-        // After the user signs in on Google/GitHub, they are redirected back.
-        // This function checks for the result of that redirect.
-        auth.getRedirectResult()
-            .catch((error) => {
-                // Handle any errors that occurred during the redirect sign-in process.
-                console.error("Auth Error on redirect:", error);
-                alert("Login failed. Please try again. Error: " + error.message);
-            });
-
-        googleLoginBtn.addEventListener('click', () => signInWithProvider(googleProvider));
-        githubLoginBtn.addEventListener('click', () => signInWithProvider(githubProvider));
-        logoutButton.addEventListener('click', () => auth.signOut());
-
-        // --- AUTOMATIC DARK MODE ---
-        const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        function updateTheme(event) {
-            document.body.classList.toggle('dark-mode', event.matches);
-        }
-        darkModeMediaQuery.addEventListener('change', updateTheme);
-        updateTheme(darkModeMediaQuery);
-
-        // --- HAMBURGER MENU ---
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLeft.classList.toggle('active');
-        });
+        })();
     </script>
 </body>
 </html>
-
-
-
