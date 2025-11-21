@@ -368,7 +368,7 @@
 
     <script>
         // --- API KEY ---
-        const apiKey = "YOUR_ACTUAL_API_KEY_HERE"; // Replace with your key
+        const apiKey = "AIzaSyDbiE9GiOr__azJtpdN1nAecPz-frcp7wA"; // Replace with your key
 
         // --- Global State ---
         let fileCache = [];
@@ -542,7 +542,7 @@
 
         // --- AI & CHAT ---
         function getApiKey() {
-            if(apiKey && apiKey !== "YOUR_ACTUAL_API_KEY_HERE") return apiKey;
+            if(apiKey && apiKey !== "AIzaSyDbiE9GiOr__azJtpdN1nAecPz-frcp7wA") return apiKey;
             let key = localStorage.getItem("gemini_api_key");
             if(!key) {
                 key = prompt("Enter your Google Gemini API Key:");
@@ -631,3 +631,4 @@
     </script>
 </body>
 </html>
+
