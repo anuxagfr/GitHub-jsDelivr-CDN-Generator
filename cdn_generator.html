@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -368,7 +368,7 @@
 
     <script>
         // --- API KEY ---
-        const apiKey = "AIzaSyDbiE9GiOr__azJtpdN1nAecPz-frcp7wA"; // Replace with your key
+        const apiKey = "AIzaSyDbiE9GiOr__azJtpdN1nAecPz-frcp7wA"; 
 
         // --- Global State ---
         let fileCache = [];
@@ -414,33 +414,44 @@
             } catch (e) {}
         }
 
-        // --- FILE FETCHING ---
+        // --- CORE LOGIC ---
         function fetchFiles() {
             const user = document.getElementById("user").value.trim();
             const repo = document.getElementById("repo").value.trim();
             const branch = document.getElementById("branch").value.trim() || "main";
             const token = document.getElementById("token").value.trim();
 
-            if (!user || !repo) return statusMessage.textContent = "GitHub Username and Repository required.";
-            
+            if (!user || !repo) {
+                statusMessage.textContent = "GitHub Username and Repository Name are required.";
+                return;
+            }
             currentRepoInfo = { user, repo, branch, file: "" };
             statusMessage.textContent = "Fetching repository data...";
             fileBrowser.classList.add("hidden");
             outputContainer.classList.add("hidden");
 
+            const githubApiUrl = `https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`;
             const headers = token ? { Authorization: `token ${token}` } : {};
-            fetch(`https://api.github.com/repos/${user}/${repo}/git/trees/${branch}?recursive=1`, { headers })
+
+            fetch(githubApiUrl, { headers: headers })
             .then(res => res.json())
             .then(data => {
-                if (!data.tree) throw new Error(data.message || "Invalid details");
+                if (data.message === "Bad credentials") throw new Error("❌ Invalid GitHub Token. Clear the token field for public repos.");
+                if (data.message === "Not Found") throw new Error("❌ Repository not found. Check spelling or visibility.");
+                if (!data.tree) throw new Error(data.message || "Invalid repo details");
+                
                 fileCache = data.tree.filter(f => f.type === "blob");
                 renderFileList(fileCache, user, repo, branch);
                 statusMessage.textContent = `Success! Found ${fileCache.length} files.`;
+                statusMessage.className = "mt-4 text-center text-sm text-green-600 dark:text-green-400 font-medium";
                 fileBrowser.classList.remove("hidden");
                 document.getElementById("search").value = "";
                 zipButton.disabled = fileCache.length === 0;
             })
-            .catch(err => statusMessage.textContent = `Error: ${err.message}`);
+            .catch(err => {
+                statusMessage.textContent = `${err.message}`;
+                statusMessage.className = "mt-4 text-center text-sm text-red-500 dark:text-red-400 font-medium";
+            });
         }
         
         function renderFileList(files, user, repo, branch) {
@@ -500,7 +511,7 @@
             zipButton.textContent = "Preparing...";
 
             for (let f of fileCache) {
-                promises.push(fetch(`https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${f.path}`).then(r => r.ok ? r.arrayBuffer() : null).then(d => { if(d) zip.file(f.path, d); processed++; zipButton.textContent = `Downloading (${Math.round((processed/fileCache.length)*100)}%)...`; }));
+                promises.push(fetch(`https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${f.path}`).then(r => r.ok ? r.arrayBuffer() : null).then(d => { if(d) zip.file(f.path, d); processed++; zipButton.textContent = `Downloading (${Math.round((processed/fileCache.length)*100)}%)...`; }).catch(e => { zip.file(f.path + ".error.txt", e.message); processed++; }));
             }
             await Promise.allSettled(promises);
             const content = await zip.generateAsync({ type: "blob" });
@@ -518,9 +529,8 @@
             el.value = text;
             document.body.appendChild(el);
             el.select();
-            document.execCommand('copy');
+            try { document.execCommand('copy'); showCopyAlert("Copied!", "bg-green-500"); } catch(e) {}
             document.body.removeChild(el);
-            showCopyAlert("Copied!", "bg-green-500");
         }
 
         function showCopyAlert(msg, color) {
@@ -542,7 +552,7 @@
 
         // --- AI & CHAT ---
         function getApiKey() {
-            if(apiKey && apiKey !== "AIzaSyDbiE9GiOr__azJtpdN1nAecPz-frcp7wA") return apiKey;
+            if(apiKey && apiKey !== "YOUR_ACTUAL_API_KEY_HERE") return apiKey;
             let key = localStorage.getItem("gemini_api_key");
             if(!key) {
                 key = prompt("Enter your Google Gemini API Key:");
@@ -598,6 +608,9 @@
         const chatInput = document.getElementById('chatInput');
         const sendBtn = document.getElementById('sendMessage');
         const messagesContainer = document.getElementById('chatMessages');
+        
+        // Chat history state for the tool page specifically
+        let chatHistory = "System: You are the Anux CDN Support Assistant. Ask for the user's name if unknown. Use their name. Keep answers short.\n";
 
         if(chatBtn) {
             const toggle = () => chatWindow.classList.toggle('open');
@@ -612,16 +625,24 @@
                 messagesContainer.innerHTML += `<div class="flex justify-end"><div class="bg-blue-600 text-white rounded-tr-none p-3 rounded-lg max-w-[85%] text-sm shadow-sm">${text}</div></div>`;
                 chatInput.value = '';
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Update history
+                chatHistory += `User: ${text}\n`;
 
                 // Loading
                 const loadId = 'l-' + Date.now();
                 messagesContainer.innerHTML += `<div id="${loadId}" class="flex justify-start"><div class="bg-gray-100 dark:bg-slate-700 p-3 rounded-lg text-xs text-gray-500">Thinking...</div></div>`;
                 
-                // AI Call
-                const response = await callGemini(null, "You are Anux support bot. Short answer. User: " + text, true);
+                // AI Call using history
+                const response = await callGemini(null, chatHistory, true);
+                
+                // Update history with bot response
+                if (!response.startsWith("Error") && !response.startsWith("API Key")) {
+                    chatHistory += `Assistant: ${response}\n`;
+                }
                 
                 document.getElementById(loadId).remove();
-                messagesContainer.innerHTML += `<div class="flex justify-start"><div class="bg-blue-100 dark:bg-blue-900 text-slate-800 dark:text-slate-200 rounded-tl-none p-3 rounded-lg max-w-[85%] text-sm shadow-sm">${response === "API Key Missing" ? "Please enter API Key via the main tool first." : response}</div></div>`;
+                messagesContainer.innerHTML += `<div class="flex justify-start"><div class="bg-blue-100 dark:bg-blue-900 text-slate-800 dark:text-slate-200 rounded-tl-none p-3 rounded-lg max-w-[85%] text-sm shadow-sm">${response === "API Key Missing" ? "Please enter API Key via prompt first." : response}</div></div>`;
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             };
 
@@ -631,4 +652,3 @@
     </script>
 </body>
 </html>
-
