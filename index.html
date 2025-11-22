@@ -553,6 +553,98 @@
         </div>
     </footer>
 
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+        <div class="modal-content bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <button id="closeModal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Form Content -->
+            <div id="modalForm">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Share your experience</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">How was your experience using Anux CDN?</p>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Name</label>
+                    <input type="text" id="reviewName" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white text-sm" placeholder="John Doe">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Rating</label>
+                    <div class="flex space-x-2 star-rating">
+                        <button class="text-3xl text-gray-300 hover:scale-110 focus:outline-none" data-value="1">★</button>
+                        <button class="text-3xl text-gray-300 hover:scale-110 focus:outline-none" data-value="2">★</button>
+                        <button class="text-3xl text-gray-300 hover:scale-110 focus:outline-none" data-value="3">★</button>
+                        <button class="text-3xl text-gray-300 hover:scale-110 focus:outline-none" data-value="4">★</button>
+                        <button class="text-3xl text-gray-300 hover:scale-110 focus:outline-none" data-value="5">★</button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Your Review</label>
+                    <textarea id="reviewText" rows="3" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white text-sm resize-none" placeholder="It works great!"></textarea>
+                </div>
+
+                <button id="submitReview" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all">
+                    Submit Review
+                </button>
+            </div>
+
+            <!-- Success Message (Hidden by default) -->
+            <div id="modalSuccess" class="hidden text-center py-8">
+                <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Thank you!</h3>
+                <p class="text-slate-500 dark:text-slate-400">Your feedback helps us improve.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Floating Chat Widget -->
+    <button id="chatToggle" class="chat-widget-btn bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center animate-pulse-ring">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+    </button>
+
+    <div id="chatWindow" class="chat-window bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden">
+        <!-- Chat Header -->
+        <div class="bg-blue-600 p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <h3 class="text-white font-bold">Support Assistant</h3>
+            </div>
+            <button id="closeChat" class="text-blue-100 hover:text-white">✕</button>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="chat-messages flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50 dark:bg-slate-900">
+            <!-- Welcome Message -->
+            <div class="flex items-start">
+                <div class="bg-blue-100 dark:bg-blue-900 text-slate-800 dark:text-slate-200 p-3 rounded-lg rounded-tl-none max-w-[85%] text-sm shadow-sm">
+                    Hi there! 👋 I'm the Anux AI assistant. I can help you generate links or answer tech questions.
+                </div>
+            </div>
+            <div class="flex items-start">
+                 <div class="bg-blue-100 dark:bg-blue-900 text-slate-800 dark:text-slate-200 p-3 rounded-lg rounded-tl-none max-w-[85%] text-sm shadow-sm leading-relaxed">
+                    Need human help? Contact Owner <strong>Anurag</strong> directly:<br>
+                    • <a href="mailto:contact@anuragfr.com" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-500">Email Support</a><br>
+                    • <a href="https://instagram.com/anuxagfr" target="_blank" class="text-pink-600 dark:text-pink-400 underline hover:text-pink-500">Instagram (@anuxagfr)</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <div class="flex space-x-2">
+                <input type="text" id="chatInput" class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 rounded-lg text-sm dark:text-white focus:outline-none" placeholder="Ask a question...">
+                <button id="sendMessage" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -753,8 +845,8 @@
             // ---------------------------------------------------------
             // AI TRAINING DATA (Knowledge Base)
             // ---------------------------------------------------------
-            let chatHistory = `System: You are the CDN Support Assistant. 
-            Here is your KNOWLEDGE BASE about the " CDN Generator" tool:
+            let chatHistory = `System: You are the Anux CDN Support Assistant. 
+            Here is your KNOWLEDGE BASE about the "Anux CDN Generator" tool:
             
             1. **WHAT WE DO:** We convert raw GitHub file links (repositories) into high-performance, production-ready jsDelivr CDN links instantly.
             2. **KEY FEATURES:** - Global Edge Network (110+ PoPs worldwide).
@@ -765,10 +857,10 @@
             4. **PRIVATE REPOS:** We do NOT support private repositories yet (coming soon).
             5. **CREATOR:** This tool was created by Anurag (Web Developer).
             6. **CONTACT & LINKS:**
-               - Portfolio: https://anuxagfr.github.io/Anurag-Portfolio/
-               - Email: anuraggautam4570@gmail.com.com
+               - Portfolio: https://anuragfr.github.io
+               - Email: contact@anuragfr.com
                - Instagram: @anuxagfr
-               - YouTube: https://www.youtube.com/@audioxeditz
+               - YouTube: [Insert YouTube Link Here]
             
             RULES FOR YOU:
             - Keep answers concise (under 50 words).
